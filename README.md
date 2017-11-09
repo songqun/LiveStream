@@ -2,6 +2,8 @@
 
 An Android App for Live and more features.
 
+Target Version: Android 5.0 (API 21)
+
 ## MainActivity
 Multiple feature buttons of the APP.
 
