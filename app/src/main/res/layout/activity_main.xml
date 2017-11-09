@@ -10,6 +10,6 @@
         android:id="@+id/liveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="liveButton" />
+        android:text="Live" />
 
 </LinearLayout>

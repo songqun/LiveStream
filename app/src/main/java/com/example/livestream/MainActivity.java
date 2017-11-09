@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
 
     private int REQUEST_PERMISSION_CAMERA_CODE = 0x66;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

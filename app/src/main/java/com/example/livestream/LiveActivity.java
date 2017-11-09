@@ -7,6 +7,7 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,28 +21,28 @@ import org.bytedeco.javacv.Frame;
 import java.nio.ByteBuffer;
 import java.nio.ShortBuffer;
 
-public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Callback, Camera.PreviewCallback{
     // Open Camera
     private Camera myCamera;
     private SurfaceView myView;
     private SurfaceHolder myHolder;
     private int myCameraId = 0;
-    private int width = 320;
-    private int height = 240;
-    private Button ctrlBtn;
+    private int width = 1280;
+    private int height = 720;
+    private Button shootButton;
 
     // Push Stream
     //private String ffmpeg_link = Environment.getExternalStorageDirectory() + "/test.flv";
-    private String ffmpeg_link = "rtmp://59.78.30.20:9090/hls/live";
+    private String ffmpeg_link = "rtmp://www.example.com/live/stream1";
     private FFmpegFrameRecorder recorder;
     private Frame yuvImage;
-    boolean isRecording = false;
-    long startTime = 0;
+    private boolean isRecording = false;
+    private long startTime = 0;
     private int sampleRate  = 44100;
     private int frameRate = 30;
 
     private Thread audioThread;
-    boolean runAudioThread = true;
+    private boolean runAudioThread = true;
     private AudioRecord audioRecord;
     private AudioRecordRunnable audioRecordRunnable;
 
@@ -50,17 +51,21 @@ public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live);
 
-        ctrlBtn = (Button) findViewById(R.id.controlButton);
-        ctrlBtn.setText("start");
-        ctrlBtn.setOnClickListener(new View.OnClickListener() {
+        shootButton = (Button) findViewById(R.id.shoot_button);
+        shootButton.setText("start");
+        shootButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (!isRecording) {
+                    Log.v("hhh","start start");
                     startRecord();
-                    ctrlBtn.setText("Stop");
+                    Log.v("hhh","end start");
+                    shootButton.setText("Stop");
                 } else {
+                    Log.v("hhh","start stop");
                     stopRecord();
-                    ctrlBtn.setText("Start");
+                    Log.v("hhh","end stop");
+                    shootButton.setText("Start");
                 }
             }
         });
@@ -69,6 +74,7 @@ public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Cal
         myHolder = myView.getHolder();
         myHolder.setFixedSize(width, height);
         myHolder.addCallback(this);
+        Log.v("hhh","Create success");
     }
 
     public void startRecord() {
@@ -80,6 +86,7 @@ public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Cal
         recorder.setFormat("flv");
         recorder.setSampleRate(sampleRate);
         recorder.setFrameRate(frameRate);
+        //recorder.setVideoBitrate(800000);
 
         audioRecordRunnable = new AudioRecordRunnable();
         audioThread = new Thread(audioRecordRunnable);
@@ -136,7 +143,9 @@ public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Cal
             ((ByteBuffer)yuvImage.image[0].position(0)).put(bytes);
             try {
                 recorder.setTimestamp(videoTimestamp);
+                Log.v("hhh","to record");
                 recorder.record(yuvImage);
+                Log.v("hhh","recorded");
             } catch (FFmpegFrameRecorder.Exception e) {
                 e.printStackTrace();
             }
@@ -162,10 +171,11 @@ public class LiveActivity extends AppCompatActivity implements SurfaceHolder.Cal
         try {
             myCamera = Camera.open(myCameraId);
             myCamera.setPreviewDisplay(myHolder);
+            myCamera.setDisplayOrientation(90);
             Camera.Parameters params = myCamera.getParameters();
             params.setPreviewSize(width, height);
             params.setPictureSize(width, height);
-            myCamera.setDisplayOrientation(90);
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
             myCamera.setParameters(params);
             myCamera.setPreviewCallback(this);
             myCamera.startPreview();
